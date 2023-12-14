@@ -32,11 +32,9 @@
         function getRoute(start, end, color) {
             var dm = new Microsoft.Maps.Directions.DirectionsManager(map);
             directionsManagers.push(dm);
-
             dm.setRequestOptions({
                 routeMode: Microsoft.Maps.Directions.RouteMode.driving
             });
-
             dm.setRenderOptions({
                 autoUpdateMapView: false,
                 drivingPolylineOptions: {

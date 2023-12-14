@@ -18,8 +18,9 @@ public interface AIController {
      String home(Model model);
 
     @PostMapping("/import")
+    String mapReadExcelData(@RequestParam("file") MultipartFile excelDataFile) ;
 
-    void mapReadExcelData(@RequestParam("file") MultipartFile excelDataFile) ;
+
 
 
 
