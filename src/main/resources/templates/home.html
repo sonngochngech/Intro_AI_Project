@@ -3,12 +3,104 @@
 <head>
     <title>AI</title>
 </head>
-<body>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: "Inter", sans-serif;
+    }
+    .formbold-main-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px;
+    }
 
-<form th:action="@{/import}" method="post" enctype="multipart/form-data" >
-    <label for="address_list"> Type: </label>
-    <input id="address_list"  type="file" th:name="file">
-    <button type="submit">confirm</button>
-</form>
+    .formbold-form-wrapper {
+        margin: 0 auto;
+        max-width: 550px;
+        width: 100%;
+        background: white;
+    }
+
+    .formbold-form-title {
+        margin-bottom: 40px;
+    }
+    .formbold-form-title h3 {
+        color: #07074D;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 35px;
+        width: 60%;
+        margin-bottom: 20px;
+    }
+    .formbold-form-title p {
+        font-size: 16px;
+        line-height: 24px;
+        color: #536387;
+        width: 70%;
+    }
+    .formbold-form-input {
+        text-align: center;
+        width: 100%;
+        padding: 14px 22px;
+        border-radius: 6px;
+        border: 1px solid #DDE3EC;
+        background: #FAFAFA;
+        font-weight: 500;
+        font-size: 16px;
+        color: #536387;
+        outline: none;
+        resize: none;
+    }
+    .formbold-form-input:focus {
+        border-color: #6a64f1;
+        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .formbold-btn {
+        text-align: center;
+        width: 100%;
+        font-size: 16px;
+        border-radius: 5px;
+        padding: 14px 25px;
+        border: none;
+        font-weight: 500;
+        background-color: #6A64F1;
+        color: white;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+    .formbold-btn:hover {
+        box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
+    }
+
+</style>
+<body>
+<div class="formbold-main-wrapper">
+    <!-- Author: FormBold Team -->
+    <!-- Learn More: https://formbold.com -->
+    <div class="formbold-form-wrapper">
+        <div class="formbold-form-title">
+            <h3>AI</h3>
+            <p>Xin chao ban</p>
+        </div>
+        <form th:action="@{/import}" method="post" enctype="multipart/form-data" >
+            <input id="address_list"  type="file" th:name="file" class="formbold-form-input" placeholder="danh sách">
+            <input id="officerNumber" th:name="officerNumber" type="text" class="formbold-form-input" placeholder="Số nhân viên">
+
+            <button class="formbold-btn" type="submit">
+                Gửi
+            </button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
+
+

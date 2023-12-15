@@ -1,32 +1,25 @@
 package com.AI.core.service;
 
 import com.AI.core.constant.PingMapAPIEndPoint;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+
 import org.springframework.web.client.RestTemplate;
 
-
+import javax.xml.stream.Location;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
-
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class BingMapAPIService {
 
-    private String keyValue="AhR8aVvA88QOY17jnEbs73h0R-kqTEiOAVfObbcyHZJl1Bz7OEtSHeZMXrNjJEsG";
+    private final String keyValue="AhR8aVvA88QOY17jnEbs73h0R-kqTEiOAVfObbcyHZJl1Bz7OEtSHeZMXrNjJEsG";
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
 
@@ -44,12 +37,12 @@ public class BingMapAPIService {
 
             }
         }
-//        for(int i=0;i<addressList.size();i++){
-//            for(int j=0;j<addressList.size();j++){
-//               log.info("{}",distanceMatrix[i][j]);
-//
-//            }
-//        }
+        for(int i=0;i<addressList.size();i++){
+            for(int j=0;j<addressList.size();j++){
+               log.info("{}",distanceMatrix[i][j]);
+
+            }
+        }
 
         return  distanceMatrix;
 
@@ -69,5 +62,59 @@ public class BingMapAPIService {
             double result=Double.parseDouble(distance.substring(questionMarkFirstOccurrence+1,commaFirstOccurrence));
 
             return  result;
+    }
+
+    public double[][] getDistanceByCoordinates(ArrayList<String> addressList){
+        double[][] distanceMatrix=new double[addressList.size()+2][addressList.size()+2];
+        ArrayList<ArrayList<Double>> coordinateList=new ArrayList<>();
+        for(String t: addressList){
+            coordinateList.add(getCoordinatesByAddress(t));
+        }
+        for(int i=0;i<addressList.size();i++){
+            for(int j=0;j<addressList.size();j++){
+                if(i!=j){
+                    distanceMatrix[i][j]=getDistanceFromCoordinates(coordinateList.get(i),coordinateList.get(j));
+                }else {
+                    distanceMatrix[i][j]=0;
+                }
+
+            }
+        }
+        for(int i=0;i<addressList.size();i++){
+            for(int j=0;j<addressList.size();j++){
+
+            }
+        }
+
+        return  distanceMatrix;
+
+    }
+
+    public ArrayList<Double> getCoordinatesByAddress(String location){
+        ArrayList<Double> coordinatesList=new ArrayList<>();
+        String url = PingMapAPIEndPoint.locationByAddressAPI + location +"?key=" + keyValue;
+        String LocationJson = restTemplate.getForObject(url, String.class);
+        int index=LocationJson.indexOf("\"coordinates\":[");
+        String coordinateString=LocationJson.substring(index);
+        int commaIndex=coordinateString.indexOf(",");
+        double firstCoordinate=Double.parseDouble(coordinateString.substring(15,commaIndex));
+        int  secondIndex=coordinateString.indexOf("]");
+        double secondCoordinate=Double.parseDouble(coordinateString.substring(commaIndex+1,secondIndex));
+        coordinatesList.add(firstCoordinate);
+        coordinatesList.add(secondCoordinate);
+        return  coordinatesList;
+    }
+
+    public double getDistanceFromCoordinates(ArrayList<Double> CoordinateOne,ArrayList<Double> CoordinateTwo){
+        double latDistance=Math.toRadians(CoordinateOne.get(0)-CoordinateTwo.get(0));
+        double lngDistance=Math.toRadians(CoordinateOne.get(1)-CoordinateTwo.get(1));
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(CoordinateOne.get(0))) * Math.cos(Math.toRadians(CoordinateTwo.get(0)))
+                * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return  6371 * c;
+
+
     }
 }
