@@ -56,7 +56,7 @@ public class AIControllerImpl implements AIController {
             for(ArrayList<Integer> h: Run.result){
                 String startsub="<way id=\""+counttt+ "\">";
                 for(int i:h){
-                    startsub= startsub + "<node lat=\""+  BingMapAPIService.points.get(i).x+"\" lon=\""+BingMapAPIService.points.get(i).y+"\"/>";
+                    startsub= startsub + "<node lat=\""+  Configs.points.get(i).x+"\" lon=\""+Configs.points.get(i).y+"\"/>";
                 }
                 startsub+="</way>";
                 startString+=startsub;

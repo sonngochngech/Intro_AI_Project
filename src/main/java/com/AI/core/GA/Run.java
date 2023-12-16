@@ -38,7 +38,6 @@ public class Run {
             }
             SubChromosome sub=new SubChromosome(destilist);
             sub.calculate_fitness();
-//            log.info("{}",sub.route);
             result.add(sub.route);
             current++;
         }

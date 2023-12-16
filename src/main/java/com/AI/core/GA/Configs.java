@@ -1,6 +1,9 @@
 package com.AI.core.GA;
 
+import com.AI.core.helper.Point;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Component
 public class Configs {
@@ -12,5 +15,6 @@ public class Configs {
 
     public static final int MAX_GENERATION=200;
     public static  int MAX_VEHICLE=10;
+    public static ArrayList<Point> points=new ArrayList<>();
 
 }

@@ -33,7 +33,6 @@ public class ExcelHelper {
                     }
                 }
             }
-//            log.info("{}",list);
 
         }catch (IOException e){
             e.printStackTrace();
