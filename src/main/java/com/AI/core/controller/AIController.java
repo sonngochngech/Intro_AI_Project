@@ -14,7 +14,7 @@ import java.io.IOException;
 @RequestMapping("/")
 public interface AIController {
 
-    @GetMapping("hello")
+    @GetMapping("")
      String home(Model model);
 
 

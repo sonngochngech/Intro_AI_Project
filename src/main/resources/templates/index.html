@@ -1,9 +1,43 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <!-- your head content here -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Routing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #mainContainer {
+            position: relative;
+            width: 90%;
+            height: 90%;
+            display: flex;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        #mapDiv {
+            flex: 1;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+    </style>
 </head>
+
 <body>
+
 <h2>Danh sách lịch trình của từng nhân viên: </h2>
 
 <!-- Iterate through routes and display them with labels -->
@@ -11,12 +45,159 @@
     <h3 th:text="'Người thứ ' + ${routeIndex.index + 1} + ':'"></h3>
     </br>
     <span th:each="address, iterStatus : ${route}">
-            <span th:text="${address}"></span>
+        <span th:text="${address}"></span>
         <!-- Add an arrow (->) if it's not the last address in the route -->
-            <span th:if="${!iterStatus.last}">   ->    </span>
-        </span>
+        <span th:if="${!iterStatus.last}">   ->    </span>
+    </span>
     </br>
     <br/>
 </div>
+<div id="mainContainer">
+    <div id="mapDiv">
+        <div id="map"></div>
+    </div>
+</div>
+<button th:onclick="|window.location='/'|">Thoát</button>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script th:inline="javascript">
+    // ------------------------------------------------------------------------ //
+    // ---------------                 Node class             ----------------- //
+    // ------------------------------------------------------------------------ //
+    class Node {
+        constructor(lat, lon) {
+            this.lat = lat;
+            this.lon = lon;
+        }
+    }
+    // ------------------------------------------------------------------------ //
+    // ---------------     color list    ----------------- //
+    // ------------------------------------------------------------------------ //
+
+    const colorArray = [
+        "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF",
+        "#00FFFF", "#FFA500", "#008000", "#800080", "#FFC0CB",
+        "#800000", "#808000", "#C0C0C0", "#000080", "#808080",
+        "#FFD700", "#008080", "#FF6347", "#40E0D0", "#B0E0E6",
+        "#800000", "#800080", "#008000", "#800000", "#800080",
+        "#008000", "#800000", "#800080", "#008000", "#800000"
+    ];
+
+
+    // ------------------------------------------------------------------------ //
+    // ---------------       Initialize the Leaflet map       ----------------- //
+    // ------------------------------------------------------------------------ //
+    var maxB = L.latLngBounds(
+        [21.045001, 105.846156],
+        [21.039919, 105.847561]
+    );
+
+    var map = L.map("map", {
+        maxBounds: maxB,
+        maxBoundsViscosity: 1.0,
+        center: [21.041947, 105.8473907],
+        zoom: 10,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+
+    // ------------------------------------------------------------------------ //
+    // ---------------              Helper functions          ----------------- //
+    // ------------------------------------------------------------------------ //
+    function drawPoint(node, radius = 0.5) {
+        L.circle([node.lat, node.lon], radius).setStyle({color: 'red'}).addTo(map);
+
+        var LeafIcon = L.Icon.extend({
+            options: {
+                iconSize: [38, 38],
+                iconAnchor: [19, 38],
+            }
+        });
+        var redIcon = new LeafIcon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png'});
+
+        L.marker(new L.LatLng(node.lat, node.lon), {icon: redIcon}).addTo(map);
+    }
+
+    function drawSegment(
+        nodeFrom,
+        nodeTo,
+        c = "red",
+        w = 3,
+        o = 0.7,
+        sF = 1
+    ) {
+        var pointA = new L.LatLng(nodeFrom.lat, nodeFrom.lon);
+        var pointB = new L.LatLng(nodeTo.lat, nodeTo.lon);
+
+        L.polyline([pointA, pointB], {
+            color: c,
+            weight: w,
+            opacity: o,
+            smoothFactor: sF,
+        }).addTo(map);
+    }
+
+    function drawPath(xml) {
+        var ways = xml.getElementsByTagName("way");
+        for (let i = 0; i < ways.length; i++) {
+            var nodes = ways[i].getElementsByTagName("node");
+            for (let j = 1; j < nodes.length; j++) {
+                var node0 = new Node(
+                    nodes[j - 1].getAttribute("lat"),
+                    nodes[j - 1].getAttribute("lon")
+                );
+                var node1 = new Node(
+                    nodes[j].getAttribute("lat"),
+                    nodes[j].getAttribute("lon")
+                );
+                drawSegment(node0, node1,colorArray[i]);
+                drawPoint(node0, 1);
+                drawPoint(node1, 1);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------ //
+    // ---------------          Get data from map.xml         ----------------- //
+    // ------------------------------------------------------------------------ //
+    function getDataXml(strInput) {
+        var parseXml;
+
+        if (window.DOMParser) {
+            parseXml = function (xmlStr) {
+                return new window.DOMParser().parseFromString(xmlStr, "text/xml");
+            };
+        } else if (
+            typeof window.ActiveXObject != "undefined" &&
+            new window.ActiveXObject("Microsoft.XMLDOM")
+        ) {
+            parseXml = function (xmlStr) {
+                var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+                xmlDoc.async = "false";
+                xmlDoc.loadXML(xmlStr);
+                return xmlDoc;
+            };
+        } else {
+            parseXml = function () {
+                return null;
+            };
+        }
+
+        return parseXml(strInput);
+    }
+
+    // ------------------------------------------------------------------------ //
+    // ---------------             DOMContentLoaded           ----------------- //
+    // ------------------------------------------------------------------------ //
+    document.addEventListener("DOMContentLoaded", function () {
+        const dataString =/*[[${stringRoutes}]]*/ '';
+
+        var xmlData = getDataXml(dataString);
+
+        drawPath(xmlData);
+    });
+</script>
 </body>
 </html>

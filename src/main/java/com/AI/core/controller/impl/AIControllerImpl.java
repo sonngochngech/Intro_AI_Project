@@ -7,6 +7,7 @@ import com.AI.core.controller.AIController;
 
 import com.AI.core.helper.ExcelHelper;
 import com.AI.core.service.BingMapAPIService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class AIControllerImpl implements AIController {
     @Override
     public String mapReadExcelData(MultipartFile excelDataFile,Integer count, RedirectAttributes redirectAttributes)   {
         try{
+            //get input information
             Configs.MAX_VEHICLE=count;
             InputStream inputStream=excelDataFile.getInputStream();
             ArrayList<String> addressList=excelHelper.readExcelHelper(inputStream);
@@ -45,11 +47,32 @@ public class AIControllerImpl implements AIController {
             Run.N=addressList.size();
             Run.distance=distances;
 
+            //run algorithm
             run.runn();
+
+//            get route in xml format
+            int counttt =1;
+            String startString="<path>";
+            for(ArrayList<Integer> h: Run.result){
+                String startsub="<way id=\""+counttt+ "\">";
+                for(int i:h){
+                    startsub= startsub + "<node lat=\""+  BingMapAPIService.points.get(i).x+"\" lon=\""+BingMapAPIService.points.get(i).y+"\"/>";
+                }
+                startsub+="</way>";
+                startString+=startsub;
+                counttt++;
+            }
+            startString+="</path>";
+
+
+//            get route in String List format
             ArrayList<ArrayList<String>> routes=Run.result.stream()
                     .map(resu->resu.stream().map(re->addressList.get(re)).collect(Collectors.toCollection(ArrayList::new)))
                     .collect(Collectors.toCollection(ArrayList::new));
+
             redirectAttributes.addFlashAttribute("routes", routes);
+            redirectAttributes.addFlashAttribute("stringRoutes",startString);
+            Run.result.clear();
         }catch(Exception e){
            e.printStackTrace();
         }

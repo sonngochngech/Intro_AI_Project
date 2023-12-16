@@ -2,6 +2,7 @@ package com.AI.core.service;
 
 import com.AI.core.constant.PingMapAPIEndPoint;
 
+import com.AI.core.helper.Point;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.*;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.xml.stream.Location;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -21,7 +23,7 @@ public class BingMapAPIService {
 
     private final String keyValue="AhR8aVvA88QOY17jnEbs73h0R-kqTEiOAVfObbcyHZJl1Bz7OEtSHeZMXrNjJEsG";
     private final RestTemplate restTemplate;
-    private final ObjectMapper mapper;
+    public static ArrayList<Point> points=new ArrayList<>();
 
     public double[][] getDistance(ArrayList<String> addressList){
         double[][] distanceMatrix=new double[addressList.size()+2][addressList.size()+2];
@@ -69,6 +71,9 @@ public class BingMapAPIService {
         ArrayList<ArrayList<Double>> coordinateList=new ArrayList<>();
         for(String t: addressList){
             coordinateList.add(getCoordinatesByAddress(t));
+        }
+        for(ArrayList<Double> x: coordinateList){
+            points.add(new Point(x.get(0),x.get(1)));
         }
         for(int i=0;i<addressList.size();i++){
             for(int j=0;j<addressList.size();j++){
